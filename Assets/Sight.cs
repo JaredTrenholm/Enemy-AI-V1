@@ -5,6 +5,11 @@ using UnityEngine;
 public class Sight : MonoBehaviour
 {
     public bool CanSee = false;
+
+    private void Update()
+    {
+        Debug.Log(CanSee);
+    }
     private void OnTriggerEnter(Collider other)
     {
         if(other.tag == "Player")

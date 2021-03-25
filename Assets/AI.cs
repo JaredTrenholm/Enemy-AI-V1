@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class AI : MonoBehaviour
 {
@@ -17,10 +19,13 @@ public class AI : MonoBehaviour
     private float TimeBeforeSwitching = 0f;
     private float TimeTarget = 1f;
     private Vector3 PlayerLastPos;
+    public bool PickRandomPatrol;
     public static int PatrolAmount = 4;
     public Vector3[] PatrolPos = new Vector3[PatrolAmount];
     private int PatrolTarget = 0;
     private State state;
+
+    public Text AttackMessage;
 
     public GameObject Player;
     public NavMeshAgent agent;
@@ -36,8 +41,33 @@ public class AI : MonoBehaviour
     private float WaitTarget = 2f;
 
 
+    private void Start()
+    {
+        if (PickRandomPatrol == true)
+        {
+            System.Random rand = new System.Random();
+            PatrolTarget = rand.Next(0, PatrolAmount);
+            if (PatrolTarget > PatrolAmount-1)
+            {
+                PatrolTarget = PatrolAmount-1;
+            }
+        }
+    }
     private void Update()
     {
+        if ((sight.CanSee == false)&&(state == State.attacking))
+        {
+            state = State.searching;
+            agent.SetDestination(PlayerLastPos);
+        }
+
+            if (state == State.attacking)
+        {
+            AttackMessage.enabled = true;
+        }
+        else {
+            AttackMessage.enabled = false;
+        }
         Debug.Log(state);
         switch (state)
         {
@@ -87,12 +117,24 @@ public class AI : MonoBehaviour
 
         if(state == State.patrolling)
         {
-            if((this.gameObject.transform.position.x == PatrolPos[PatrolTarget].x)&& (this.gameObject.transform.position.z == PatrolPos[PatrolTarget].z))
+            if ((this.gameObject.transform.position.x == PatrolPos[PatrolTarget].x) && (this.gameObject.transform.position.z == PatrolPos[PatrolTarget].z))
             {
-                PatrolTarget = PatrolTarget + 1;
-                if(PatrolTarget == PatrolAmount)
+                if (PickRandomPatrol == false)
                 {
-                    PatrolTarget = 0;
+                    PatrolTarget = PatrolTarget + 1;
+                    if (PatrolTarget == PatrolAmount)
+                    {
+                        PatrolTarget = 0;
+                        PickRandomPatrol = !PickRandomPatrol;
+                    }
+                } else
+                {
+                    System.Random rand = new System.Random();
+                    PatrolTarget = rand.Next(0, PatrolAmount);
+                    if (PatrolTarget > PatrolAmount - 1)
+                    {
+                        PatrolTarget = PatrolAmount - 1;
+                    }
                 }
             }
             agent.SetDestination(PatrolPos[PatrolTarget]);
