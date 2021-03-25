@@ -21,10 +21,11 @@ public class AI : MonoBehaviour
     public Vector3[] PatrolPos = new Vector3[PatrolAmount];
     private int PatrolTarget = 0;
     private State state;
-    public int Range = 10;
 
     public GameObject Player;
     public NavMeshAgent agent;
+
+    public Sight sight;
 
     public GameObject Patrolling;
     public GameObject Searching;
@@ -33,6 +34,7 @@ public class AI : MonoBehaviour
     public GameObject Retreating;
     private float Waiting = 0f;
     private float WaitTarget = 2f;
+
 
     private void Update()
     {
@@ -76,18 +78,11 @@ public class AI : MonoBehaviour
                 break;
         }
 
-        if ((Player.transform.position.x < this.gameObject.transform.position.x + Range) && (Player.transform.position.x > this.gameObject.transform.position.x - Range))
-        {
-            if ((Player.transform.position.y < this.gameObject.transform.position.y + Range) && (Player.transform.position.y > this.gameObject.transform.position.y - Range))
-            {
-                if ((Player.transform.position.z < this.gameObject.transform.position.z + Range) && (Player.transform.position.z > this.gameObject.transform.position.z - Range))
-                {
-                    PlayerLastPos = Player.gameObject.transform.position;
-                    ChangeState(State.chasing);
-                    agent.SetDestination(PlayerLastPos);
-                }                
-            }
-            
+        if (sight.CanSee == true) { 
+                    
+                        PlayerLastPos = Player.gameObject.transform.position;
+                        ChangeState(State.chasing);
+                        agent.SetDestination(PlayerLastPos);
         }
 
         if(state == State.patrolling)
@@ -118,23 +113,18 @@ public class AI : MonoBehaviour
 
         if (TimeBeforeSwitching >= TimeTarget)
         {
-            if ((Player.transform.position.x < this.gameObject.transform.position.x + Range) && (Player.transform.position.x > this.gameObject.transform.position.x - Range))
+
+            if (sight.CanSee == true)
             {
-                if ((Player.transform.position.y < this.gameObject.transform.position.y + Range) && (Player.transform.position.y > this.gameObject.transform.position.y - Range))
+                if ((Player.transform.position.x < this.gameObject.transform.position.x + 2) && (Player.transform.position.x > this.gameObject.transform.position.x - 2) && (Player.transform.position.y < this.gameObject.transform.position.y + 2) && (Player.transform.position.y > this.gameObject.transform.position.y - 2) && (Player.transform.position.z < this.gameObject.transform.position.z + 2) && (Player.transform.position.z > this.gameObject.transform.position.z - 2))
                 {
-                    if ((Player.transform.position.z < this.gameObject.transform.position.z + Range) && (Player.transform.position.z > this.gameObject.transform.position.z - Range))
-                    {
-                        ChangeState(State.chasing);
-                    }
-                    else
-                    {
-                        if (state == State.chasing) ChangeState(State.searching);
-                    }
-                }
-                else
+                    ChangeState(State.attacking);
+                } else
                 {
-                    if (state == State.chasing) ChangeState(State.searching);
+                    ChangeState(State.chasing);
                 }
+
+                       
             }
             else
             {
@@ -160,7 +150,7 @@ public class AI : MonoBehaviour
                     
                     break;
                 case State.attacking:
-                    
+                    agent.SetDestination(this.gameObject.transform.position);
                     break;
                 case State.chasing:
                     agent.SetDestination(PlayerLastPos);
